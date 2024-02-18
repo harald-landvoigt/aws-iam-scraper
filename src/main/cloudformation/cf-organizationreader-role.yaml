@@ -1,0 +1,56 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: >
+  This CloudFormation template creates a role assumed by the local user
+  to get a list of all accounts in an organization.
+
+Parameters:
+  UserARN:
+    Type: String
+    Description: The ARN of the user.
+    AllowedPattern: '^arn:aws:.+::\d{12}:.+$'
+  Owner:
+    Type: String
+    Description: The owner email of the stack.
+    AllowedPattern: '^[a-z0-9\.\-\_]+@[a-z0-9\.\-\_]+$'
+    ConstraintDescription: 'must be a valid email address'
+
+Resources:
+  OrganizationAccountsReaderRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: 'IamScraper-OrganizationAccountsReaderRole'
+      Tags:
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: Purpose
+          Value: 'IamScraper'
+        - Key: Name
+          Value: 'IamScraper-OrganizationAccountsReaderRole'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Ref UserARN
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: 'IamScraper-OrganizationAccountsReaderPolicy'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                - organizations:ListAccounts
+                Resource: "*"
+Outputs:
+    OrganizationAccountsReaderRoleArn:
+      Value: !GetAtt OrganizationAccountsReaderRole.Arn
+      Description: The ARN of the OrganizationAccountsReaderRole.
+      Export:
+        Name: IamScraper-OrganizationAccountsReaderRoleArn
+    OrganizationAccountsReaderRoleName:
+      Value: !Ref OrganizationAccountsReaderRole
+      Description: The name of the OrganizationAccountsReaderRole.
+      Export:
+        Name: IamScraper-OrganizationAccountsReaderRoleName

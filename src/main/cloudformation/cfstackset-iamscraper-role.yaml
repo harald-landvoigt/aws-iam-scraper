@@ -1,0 +1,57 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: >
+  This CloudFormation template creates a role assumed by the local user
+  to get a list of all IAM users in an account.
+
+Parameters:
+  UserARN:
+    Type: String
+    Description: The ARN of the user.
+    AllowedPattern: '^arn:aws:.+::\d{12}:.+$'
+  Owner:
+    Type: String
+    Description: The owner email of the stack.
+    AllowedPattern: '^[a-z0-9\.\-\_]+@[a-z0-9\.\-\_]+$'
+    ConstraintDescription: 'must be a valid email address'
+
+Resources:
+  IamUserReaderRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: 'IamScraper-IamUserReaderRole'
+      Tags:
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: Purpose
+          Value: 'IamScraper'
+        - Key: Name
+          Value: 'IamScraper-IamUserReaderRole'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Ref UserARN
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: 'IamScraper-IamUserReaderRole'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - iam:List*
+                  - iam:Get*
+                Resource: "*"
+Outputs:
+  OrganizationAccountsReaderRoleArn:
+    Value: !GetAtt IamUserReaderRole.Arn
+    Description: The ARN of the IamUserReaderRole.
+    Export:
+      Name: IamScraper-IamUserReaderRoleArn
+  OrganizationAccountsReaderRoleName:
+    Value: !Ref IamUserReaderRole
+    Description: The name of the IamUserReaderRole.
+    Export:
+      Name: IamScraper-IamUserReaderRoleName

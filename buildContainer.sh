@@ -1,0 +1,1 @@
+mvn clean install -DskipTests=true -Dquarkus.native.container-build=true -Dquarkus.container-image.build=true
