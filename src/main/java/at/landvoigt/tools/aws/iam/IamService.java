@@ -48,7 +48,6 @@ public class IamService {
             do {
                 final ListUsersResponse listUserResponse = iamClient.listUsers(ListUsersRequest.builder()
                         .marker(marker)
-                        .maxItems(50)
                         .build());
                 marker = listUserResponse.marker();
                 for (final User user : listUserResponse.users()) {

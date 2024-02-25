@@ -11,9 +11,10 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.organizations.OrganizationsClient;
 import software.amazon.awssdk.services.organizations.model.Account;
 import software.amazon.awssdk.services.organizations.model.ListAccountsRequest;
+import software.amazon.awssdk.services.organizations.model.ListAccountsResponse;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @ApplicationScoped
@@ -27,7 +28,7 @@ public class OrganizationService {
     @Getter
     private final String organizationReaderRoleArn;
 
-    public OrganizationService(@ConfigProperty(name = "aws.organization.role.reader.arn") final String  roleArn,
+    public OrganizationService(@ConfigProperty(name = "aws.organization.role.reader.arn") final String roleArn,
                                @ConfigProperty(name = "aws.organization.account") final String organizationAccountId) {
 
         if (organizationAccountId == null || !Pattern.compile("[0-9]{12}").matcher(organizationAccountId).matches()) {
@@ -37,11 +38,21 @@ public class OrganizationService {
         organizationReaderRoleArn = roleArn.replace("ORG_ACCOUNT_ID", organizationAccountId);
         log.info("Using role arn: {}", organizationReaderRoleArn);
     }
+
     public Collection<String> findAllAccounts() {
+        final Collection<String> accountIds = new ArrayList<>();
+        String token = null;
         try (final OrganizationsClient organizationsClient = createClient(organizationReaderRoleArn)) {
-            return organizationsClient.listAccounts(ListAccountsRequest.builder().build())
-                    .accounts().stream().map(Account::id).toList();
+            do {
+                final ListAccountsResponse listAccessKeysResponse = organizationsClient.listAccounts(
+                        ListAccountsRequest.builder()
+                                .nextToken(token)
+                                .build());
+                accountIds.addAll(listAccessKeysResponse.accounts().stream().map(Account::id).toList());
+                token = listAccessKeysResponse.nextToken();
+            } while (token != null);
         }
+        return accountIds;
     }
 
     private OrganizationsClient createClient(final String organizationReaderRoleArn) {
