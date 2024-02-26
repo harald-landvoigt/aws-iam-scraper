@@ -20,8 +20,14 @@ To build this tool you need
 
 ## How to install
 
-1. Deploy cloudformation template cloudformation/cf-organizationreader-role.yaml to your master account. UserARN is the arn of your local user.
+1. Deploy CloudFormation template cloudformation/cf-organizationreader-role.yaml to your master account. UserARN is the arn of your local user.
 2. Deploy cfstackset-iamscraper-role.yaml as a stackset to all your AWS accounts. UserARN is the arn of your local user.
+
+To get the ARN of your local user run
+```shell script
+aws sts get-caller-identity
+```
+and use this ARN for the CloudFormation UserARN parameter.
 
 ## How to run
 
