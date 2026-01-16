@@ -13,4 +13,5 @@ public class AccessKeyData {
     private String userName;
     private String status;
     private String creationDate;
+    private String lastUsedDate;
 }
